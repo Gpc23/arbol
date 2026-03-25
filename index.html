@@ -461,7 +461,7 @@
             min-height: 20px;
         }
 
-        /* CALENDARIO CON NOTAS */
+        /* CALENDARIO CON MÚLTIPLES NOTAS */
         .calendar-container {
             height: 100%;
             display: flex;
@@ -608,7 +608,7 @@
             width: 20px;
         }
 
-        /* Sección de notas del día */
+        /* Sección de notas del día - MÚLTIPLES NOTAS */
         .day-note-section {
             background: rgba(10, 15, 35, 0.5);
             border-radius: 15px;
@@ -647,7 +647,7 @@
             border-color: #74b9ff;
         }
 
-        .save-note-btn {
+        .add-note-btn {
             padding: 10px 20px;
             background: rgba(116, 185, 255, 0.3);
             border: 1px solid rgba(116, 185, 255, 0.5);
@@ -658,51 +658,85 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            white-space: nowrap;
         }
 
-        .save-note-btn:hover {
+        .add-note-btn:hover {
             background: rgba(116, 185, 255, 0.5);
         }
 
-        .current-note {
-            background: rgba(116, 185, 255, 0.1);
-            border-radius: 10px;
-            padding: 12px;
+        .notes-list {
+            max-height: 200px;
+            overflow-y: auto;
             margin-top: 10px;
         }
 
-        .current-note-label {
-            font-size: 0.8rem;
-            color: #a29bfe;
-            margin-bottom: 5px;
+        .note-item {
+            background: rgba(116, 185, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            border-left: 3px solid #74b9ff;
         }
 
-        .current-note-text {
-            font-size: 0.95rem;
-            line-height: 1.4;
-            color: #dfe6e9;
-        }
-
-        .no-note-text {
-            color: #a29bfe;
-            font-style: italic;
+        .note-content {
+            flex: 1;
             font-size: 0.9rem;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .note-meta {
+            font-size: 0.7rem;
+            color: #a29bfe;
+            margin-top: 5px;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 8px;
         }
 
         .delete-note-btn {
             background: rgba(255, 118, 117, 0.2);
-            border: 1px solid rgba(255, 118, 117, 0.4);
-            border-radius: 8px;
-            padding: 5px 12px;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 8px;
             color: #ff7675;
             cursor: pointer;
-            font-size: 0.8rem;
-            margin-top: 8px;
+            font-size: 0.7rem;
             transition: all 0.3s ease;
         }
 
         .delete-note-btn:hover {
             background: rgba(255, 118, 117, 0.4);
+        }
+
+        .edit-note-btn {
+            background: rgba(116, 185, 255, 0.2);
+            border: none;
+            border-radius: 6px;
+            padding: 5px 8px;
+            color: #74b9ff;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+
+        .edit-note-btn:hover {
+            background: rgba(116, 185, 255, 0.4);
+        }
+
+        .no-notes {
+            text-align: center;
+            color: #a29bfe;
+            font-style: italic;
+            padding: 15px;
+            font-size: 0.9rem;
         }
 
         .messages-container {
@@ -1001,6 +1035,8 @@
             .time-inputs { flex-direction: column; gap: 15px; }
             .time-input-group { width: 100%; }
             .time-input { width: 100%; max-width: 150px; }
+            .note-input-area { flex-direction: column; }
+            .add-note-btn { justify-content: center; }
         }
     </style>
 </head>
@@ -1104,20 +1140,18 @@
                                 <div class="legend-item"><div class="legend-color today"></div><span>Hoy</span></div>
                                 <div class="legend-item"><div class="legend-color anniversary"></div><span>Aniversario</span></div>
                                 <div class="legend-item"><div class="legend-color selected"></div><span>Seleccionado</span></div>
-                                <div class="legend-item"><div class="legend-color has-note"></div><span>Tiene nota</span></div>
+                                <div class="legend-item"><div class="legend-color has-note"></div><span>Tiene notas</span></div>
                             </div>
                             
-                            <!-- Sección de notas del día -->
+                            <!-- Sección de notas del día - MÚLTIPLES NOTAS -->
                             <div class="day-note-section" id="dayNoteSection">
                                 <div class="selected-date-title" id="selectedDateTitle">Selecciona un día</div>
                                 <div class="note-input-area">
                                     <textarea class="note-input" id="noteInput" rows="2" placeholder="Escribe una nota para este día..."></textarea>
-                                    <button class="save-note-btn" id="saveNoteBtn"><i class="fas fa-save"></i> Guardar</button>
+                                    <button class="add-note-btn" id="addNoteBtn"><i class="fas fa-plus"></i> Añadir Nota</button>
                                 </div>
-                                <div class="current-note" id="currentNote">
-                                    <div class="current-note-label">📝 Nota guardada:</div>
-                                    <div class="current-note-text" id="currentNoteText">Selecciona un día para ver o añadir notas</div>
-                                    <button class="delete-note-btn" id="deleteNoteBtn" style="display: none;"><i class="fas fa-trash"></i> Eliminar nota</button>
+                                <div class="notes-list" id="notesList">
+                                    <div class="no-notes">Selecciona un día para ver sus notas</div>
                                 </div>
                             </div>
                         </div>
@@ -1176,7 +1210,7 @@
         let currentCalendarDate = new Date();
         let currentUser = null;
         let selectedDate = null;
-        let currentNote = null;
+        let allNotes = {}; // Estructura: { dateKey: [ {id, text, date, createdBy} ] }
         
         const seasonColors = {
             spring: ['#74b9ff', '#81ecec', '#a29bfe', '#6c5ce7', '#00cec9', '#55efc4', '#00b894'],
@@ -1257,9 +1291,8 @@
         // Elementos de notas
         const selectedDateTitle = document.getElementById('selectedDateTitle');
         const noteInput = document.getElementById('noteInput');
-        const saveNoteBtn = document.getElementById('saveNoteBtn');
-        const currentNoteText = document.getElementById('currentNoteText');
-        const deleteNoteBtn = document.getElementById('deleteNoteBtn');
+        const addNoteBtn = document.getElementById('addNoteBtn');
+        const notesList = document.getElementById('notesList');
         
         // ================= FUNCIONES =================
         function getCurrentSeason() {
@@ -1409,99 +1442,165 @@
             } else { alert("Establece un tiempo mayor a 0"); }
         }
         
-        // ================= NOTAS DEL CALENDARIO =================
-        let allNotes = {};
-        
+        // ================= NOTAS DEL CALENDARIO - MÚLTIPLES NOTAS =================
         async function loadNotes() {
             if (!isFirebaseInitialized) return;
             try {
-                db.collection('calendarNotes').onSnapshot((snapshot) => {
+                db.collection('calendarNotes').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
                     allNotes = {};
                     snapshot.forEach(doc => {
-                        allNotes[doc.id] = doc.data();
+                        const note = doc.data();
+                        const dateKey = note.dateKey;
+                        if (!allNotes[dateKey]) {
+                            allNotes[dateKey] = [];
+                        }
+                        allNotes[dateKey].push({
+                            id: doc.id,
+                            text: note.text,
+                            createdBy: note.createdBy,
+                            date: note.date,
+                            timestamp: note.timestamp
+                        });
                     });
+                    // Ordenar notas por fecha de creación (más recientes primero)
+                    for (let dateKey in allNotes) {
+                        allNotes[dateKey].sort((a, b) => {
+                            if (a.timestamp && b.timestamp) {
+                                return b.timestamp - a.timestamp;
+                            }
+                            return 0;
+                        });
+                    }
                     renderCalendar();
                     if (selectedDate) {
-                        displayNoteForDate(selectedDate);
+                        displayNotesForDate(selectedDate);
                     }
                 });
             } catch(e) { console.error("Error cargando notas:", e); }
         }
         
-        async function saveNote(date, noteText) {
-            if (!isFirebaseInitialized || !date) return;
+        async function addNote(date, noteText) {
+            if (!isFirebaseInitialized || !date || !noteText.trim()) return;
             const dateKey = formatDateKey(date);
             try {
-                if (noteText && noteText.trim()) {
-                    await db.collection('calendarNotes').doc(dateKey).set({
-                        text: noteText.trim(),
-                        updatedBy: currentUser,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        date: dateKey
-                    });
-                } else {
-                    // Si el texto está vacío, eliminar la nota
-                    await db.collection('calendarNotes').doc(dateKey).delete();
-                }
+                await db.collection('calendarNotes').add({
+                    dateKey: dateKey,
+                    text: noteText.trim(),
+                    createdBy: currentUser,
+                    date: new Date().toLocaleString('es-ES'),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
                 return true;
-            } catch(e) { console.error("Error guardando nota:", e); return false; }
+            } catch(e) { console.error("Error añadiendo nota:", e); return false; }
         }
         
-        async function deleteNote(date) {
-            if (!isFirebaseInitialized || !date) return;
-            const dateKey = formatDateKey(date);
+        async function deleteNote(noteId) {
+            if (!isFirebaseInitialized || !noteId) return;
             try {
-                await db.collection('calendarNotes').doc(dateKey).delete();
+                await db.collection('calendarNotes').doc(noteId).delete();
                 return true;
             } catch(e) { console.error("Error eliminando nota:", e); return false; }
         }
         
-        function getNoteForDate(date) {
-            if (!date) return null;
-            const dateKey = formatDateKey(date);
-            return allNotes[dateKey] || null;
+        async function editNote(noteId, newText) {
+            if (!isFirebaseInitialized || !noteId || !newText.trim()) return;
+            try {
+                await db.collection('calendarNotes').doc(noteId).update({
+                    text: newText.trim(),
+                    editedBy: currentUser,
+                    editedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                return true;
+            } catch(e) { console.error("Error editando nota:", e); return false; }
         }
         
-        function displayNoteForDate(date) {
+        function getNotesForDate(date) {
+            if (!date) return [];
+            const dateKey = formatDateKey(date);
+            return allNotes[dateKey] || [];
+        }
+        
+        function displayNotesForDate(date) {
             if (!date) {
                 selectedDateTitle.textContent = "Selecciona un día";
-                currentNoteText.textContent = "Selecciona un día para ver o añadir notas";
+                notesList.innerHTML = '<div class="no-notes">Selecciona un día para ver sus notas</div>';
                 noteInput.value = "";
-                deleteNoteBtn.style.display = "none";
                 return;
             }
             
             const formattedDate = date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             selectedDateTitle.textContent = `📅 ${formattedDate}`;
             
-            const note = getNoteForDate(date);
-            if (note && note.text) {
-                currentNoteText.textContent = note.text;
-                noteInput.value = note.text;
-                deleteNoteBtn.style.display = "block";
-            } else {
-                currentNoteText.textContent = "No hay nota para este día. Escribe una arriba y guarda.";
-                noteInput.value = "";
-                deleteNoteBtn.style.display = "none";
+            const notes = getNotesForDate(date);
+            
+            if (notes.length === 0) {
+                notesList.innerHTML = '<div class="no-notes">✨ No hay notas para este día. Escribe una arriba ✨</div>';
+                return;
             }
+            
+            notesList.innerHTML = '';
+            notes.forEach(note => {
+                const noteDiv = document.createElement('div');
+                noteDiv.className = 'note-item';
+                noteDiv.innerHTML = `
+                    <div class="note-content">
+                        <div>${escapeHtml(note.text)}</div>
+                        <div class="note-meta">
+                            <i class="fas fa-user"></i> ${escapeHtml(note.createdBy)} • 
+                            <i class="fas fa-calendar-alt"></i> ${note.date || 'Fecha desconocida'}
+                        </div>
+                    </div>
+                    <div class="note-actions">
+                        <button class="edit-note-btn" data-id="${note.id}" data-text="${escapeHtml(note.text)}"><i class="fas fa-edit"></i></button>
+                        <button class="delete-note-btn" data-id="${note.id}"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                notesList.appendChild(noteDiv);
+            });
+            
+            // Añadir event listeners a los botones
+            document.querySelectorAll('.edit-note-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const noteId = btn.getAttribute('data-id');
+                    const currentText = btn.getAttribute('data-text');
+                    const newText = prompt('Editar nota:', currentText);
+                    if (newText && newText.trim() && newText !== currentText) {
+                        await editNote(noteId, newText.trim());
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.delete-note-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (confirm('¿Eliminar esta nota?')) {
+                        const noteId = btn.getAttribute('data-id');
+                        await deleteNote(noteId);
+                    }
+                });
+            });
         }
         
-        async function handleSaveNote() {
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        async function handleAddNote() {
             if (!selectedDate) {
                 alert("Primero selecciona un día en el calendario");
                 return;
             }
             const noteText = noteInput.value.trim();
-            await saveNote(selectedDate, noteText);
-            displayNoteForDate(selectedDate);
-        }
-        
-        async function handleDeleteNote() {
-            if (!selectedDate) return;
-            if (confirm("¿Eliminar la nota de este día?")) {
-                await deleteNote(selectedDate);
-                displayNoteForDate(selectedDate);
+            if (!noteText) {
+                alert("Escribe algo para la nota");
+                return;
             }
+            await addNote(selectedDate, noteText);
+            noteInput.value = "";
+            displayNotesForDate(selectedDate);
         }
         
         // ================= CALENDARIO =================
@@ -1534,7 +1633,7 @@
                 if (day === 26 && month === 2) {
                     dayEl.classList.add('anniversary');
                 }
-                if (allNotes[dateKey] && allNotes[dateKey].text) {
+                if (allNotes[dateKey] && allNotes[dateKey].length > 0) {
                     dayEl.classList.add('has-note');
                 }
                 if (selectedDate && formatDateKey(selectedDate) === dateKey) {
@@ -1554,7 +1653,7 @@
         function selectDate(date) {
             selectedDate = date;
             renderCalendar();
-            displayNoteForDate(date);
+            displayNotesForDate(date);
         }
         
         // ================= MENSAJES CON FIREBASE =================
@@ -1569,8 +1668,8 @@
                         const div = document.createElement('div');
                         div.className = 'message-item';
                         div.innerHTML = `
-                            <div class="message-sender">${msg.sender || 'Alguien'}</div>
-                            <div>${msg.text}</div>
+                            <div class="message-sender">${escapeHtml(msg.sender || 'Alguien')}</div>
+                            <div>${escapeHtml(msg.text)}</div>
                             <div class="message-date">${msg.date || new Date().toLocaleString()}</div>
                         `;
                         messagesListElement.appendChild(div);
@@ -1745,8 +1844,7 @@
             addMessageBtn.addEventListener('click', addNewMessage);
             
             // Eventos de notas
-            saveNoteBtn.addEventListener('click', handleSaveNote);
-            deleteNoteBtn.addEventListener('click', handleDeleteNote);
+            addNoteBtn.addEventListener('click', handleAddNote);
             
             setInterval(() => { if(Math.random() > 0.7 && heartCount < 500) createStars(); }, 15000);
         });
