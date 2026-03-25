@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestro Tiempo Juntos - Desde el 26 de Marzo 2024</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 50%, #4a69bd 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0c2461, #1e3799);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 1.5s ease, visibility 1.5s ease;
+        }
+
+        .intro-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .heart-loader {
+            width: 80px;
+            height: 80px;
+            background: #74b9ff;
+            position: relative;
+            transform: rotate(45deg);
+            animation: heartbeat 1.2s infinite;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px #74b9ff;
+        }
+
+        .heart-loader:before,
+        .heart-loader:after {
+            content: '';
+            width: 80px;
+            height: 80px;
+            background: #74b9ff;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 30px #74b9ff;
+        }
+
+        .heart-loader:before {
+            top: -40px;
+            left: 0;
+        }
+
+        .heart-loader:after {
+            top: 0;
+            left: -40px;
+        }
+
+        .intro-text {
+            text-align: center;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #74b9ff, #a29bfe, #dfe6e9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.5s forwards;
+        }
+
+        .intro-date {
+            font-size: 1.8rem;
+            color: #dfe6e9;
+            opacity: 0;
+            animation: fadeInUp 1s ease 1s forwards;
+            margin-bottom: 40px;
+        }
+
+        .intro-subtitle {
+            font-size: 1.2rem;
+            color: #a8b2d1;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.6;
+            opacity: 0;
+            animation: fadeInUp 1s ease 1.5s forwards;
+        }
+
+        .main-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+            padding: 20px;
+        }
+
+        .main-content.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin: 20px auto 40px;
+            padding: 20px;
+            max-width: 1200px;
+        }
+
+        .title {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #74b9ff, #a29bfe, #dfe6e9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(116, 185, 255, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.4rem;
+            color: #dfe6e9;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .anniversary-date {
+            font-size: 1.6rem;
+            color: #74b9ff;
+            background: rgba(116, 185, 255, 0.1);
+            padding: 10px 25px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-top: 15px;
+            border: 1px solid rgba(116, 185, 255, 0.3);
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .tree-container {
+            flex: 1;
+            min-width: 550px;
+            max-width: 750px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 700px;
+            background: rgba(10, 15, 35, 0.5);
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(116, 185, 255, 0.2);
+        }
+
+        .features-container {
+            flex: 1;
+            min-width: 400px;
+            max-width: 550px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(116, 185, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: 700px;
+            overflow-y: auto;
+        }
+
+        .features-title {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #74b9ff;
+            text-shadow: 0 0 10px rgba(116, 185, 255, 0.5);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(116, 185, 255, 0.2);
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: #dfe6e9;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            color: #74b9ff;
+        }
+
+        .tab-btn.active:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #74b9ff;
+            border-radius: 3px 3px 0 0;
+        }
+
+        .tab-btn:hover {
+            color: #a29bfe;
+        }
+
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .together-time {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(116, 185, 255, 0.2);
+        }
+
+        .together-title {
+            font-size: 1.6rem;
+            color: #a29bfe;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .together-display {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #dfe6e9;
+            text-shadow: 0 0 20px rgba(116, 185, 255, 0.8);
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .time-unit {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+            width: 100%;
+        }
+
+        .unit {
+            text-align: center;
+            padding: 10px;
+            background: rgba(116, 185, 255, 0.1);
+            border-radius: 15px;
+            min-width: 80px;
+            border: 1px solid rgba(116, 185, 255, 0.2);
+        }
+
+        .unit-value {
+            font-size: 1.6rem;
+            color: #74b9ff;
+            font-weight: bold;
+        }
+
+        .unit-label {
+            font-size: 0.75rem;
+            color: #dfe6e9;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .normal-clock {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(116, 185, 255, 0.2);
+        }
+
+        .normal-clock-title {
+            font-size: 1.4rem;
+            color: #a29bfe;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .digital-clock {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #dfe6e9;
+            text-shadow: 0 0 20px rgba(116, 185, 255, 0.8);
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 8px;
+            padding: 15px;
+            background: rgba(10, 15, 35, 0.4);
+            border-radius: 15px;
+            border: 2px solid rgba(116, 185, 255, 0.3);
+        }
+
+        .date-display {
+            font-size: 1.1rem;
+            color: #a29bfe;
+            font-style: italic;
+        }
+
+        .pomodoro-container {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .pomodoro-title {
+            font-size: 1.4rem;
+            color: #a29bfe;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .pomodoro-display {
+            font-size: 2.2rem;
+            font-weight: 300;
+            color: #dfe6e9;
+            text-shadow: 0 0 15px rgba(116, 185, 255, 0.8);
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(10, 15, 35, 0.4);
+            border-radius: 15px;
+            border: 2px solid rgba(116, 185, 255, 0.3);
+        }
+
+        .pomodoro-display.alarm {
+            color: #ff7675;
+            text-shadow: 0 0 15px rgba(255, 118, 117, 0.8);
+            animation: pulse 1s infinite;
+        }
+
+        .pomodoro-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .pomodoro-btn {
+            background: rgba(116, 185, 255, 0.15);
+            border: 1px solid rgba(116, 185, 255, 0.3);
+            border-radius: 50px;
+            color: #dfe6e9;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 90px;
+            justify-content: center;
+        }
+
+        .pomodoro-btn:hover {
+            background: rgba(116, 185, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .pomodoro-btn.start {
+            background: rgba(0, 184, 148, 0.25);
+            border-color: rgba(0, 184, 148, 0.4);
+        }
+
+        .pomodoro-btn.pause {
+            background: rgba(253, 203, 110, 0.25);
+            border-color: rgba(253, 203, 110, 0.4);
+        }
+
+        .pomodoro-btn.reset {
+            background: rgba(255, 118, 117, 0.25);
+            border-color: rgba(255, 118, 117, 0.4);
+        }
+
+        .pomodoro-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .pomodoro-presets {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            background: rgba(116, 185, 255, 0.1);
+            border: 1px solid rgba(116, 185, 255, 0.2);
+            border-radius: 50px;
+            color: #dfe6e9;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preset-btn:hover {
+            background: rgba(116, 185, 255, 0.2);
+        }
+
+        .pomodoro-status {
+            font-size: 0.9rem;
+            color: #a29bfe;
+            margin-top: 10px;
+            font-style: italic;
+            min-height: 20px;
+        }
+
+        .calendar-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .calendar-month {
+            font-size: 1.4rem;
+            color: #74b9ff;
+        }
+
+        .calendar-nav-btn {
+            background: rgba(116, 185, 255, 0.1);
+            border: 1px solid rgba(116, 185, 255, 0.3);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #dfe6e9;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-nav-btn:hover {
+            background: rgba(116, 185, 255, 0.2);
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .weekday {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #a29bfe;
+            padding: 5px;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            flex: 1;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: default;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            background: rgba(116, 185, 255, 0.05);
+            border: 1px solid rgba(116, 185, 255, 0.1);
+            position: relative;
+        }
+
+        .calendar-day.empty {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+
+        .calendar-day.today {
+            background: rgba(116, 185, 255, 0.2);
+            border-color: #74b9ff;
+            font-weight: bold;
+        }
+
+        .calendar-day.anniversary {
+            background: rgba(255, 118, 117, 0.2);
+            border-color: #ff7675;
+            color: #ff7675;
+            font-weight: bold;
+        }
+
+        .calendar-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 0.8rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color.today {
+            background: rgba(116, 185, 255, 0.2);
+            border: 1px solid #74b9ff;
+        }
+
+        .legend-color.anniversary {
+            background: rgba(255, 118, 117, 0.2);
+            border: 1px solid #ff7675;
+        }
+
+        .messages-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages-title {
+            font-size: 1.4rem;
+            color: #74b9ff;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .messages-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(10, 15, 35, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(116, 185, 255, 0.2);
+        }
+
+        .message-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(116, 185, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(116, 185, 255, 0.2);
+            font-size: 0.95rem;
+            line-height: 1.4;
+            color: #dfe6e9;
+            animation: fadeIn 0.5s ease;
+            position: relative;
+        }
+
+        .message-sender {
+            font-size: 0.8rem;
+            color: #74b9ff;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .message-date {
+            font-size: 0.7rem;
+            color: #a29bfe;
+            text-align: right;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .add-message-btn {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(116, 185, 255, 0.2);
+            border: 1px solid rgba(116, 185, 255, 0.3);
+            border-radius: 20px;
+            color: #dfe6e9;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .add-message-btn:hover {
+            background: rgba(116, 185, 255, 0.3);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(20, 30, 70, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            border: 2px solid rgba(116, 185, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            transform: translateY(-30px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            color: #74b9ff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .time-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .time-input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .time-input-group label {
+            font-size: 0.9rem;
+            color: #a29bfe;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .time-input {
+            width: 80px;
+            padding: 12px;
+            background: rgba(10, 15, 35, 0.6);
+            border: 2px solid rgba(116, 185, 255, 0.3);
+            border-radius: 10px;
+            color: #74b9ff;
+            font-size: 1.8rem;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+
+        .time-input:focus {
+            outline: none;
+            border-color: #74b9ff;
+            box-shadow: 0 0 10px rgba(116, 185, 255, 0.5);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .modal-btn.confirm {
+            background: rgba(116, 185, 255, 0.3);
+            color: white;
+            border: 1px solid rgba(116, 185, 255, 0.5);
+        }
+
+        .modal-btn.cancel {
+            background: rgba(255, 118, 117, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 118, 117, 0.4);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .tree-base {
+            position: absolute;
+            bottom: 40px;
+            width: 100px;
+            height: 150px;
+            background: linear-gradient(to right, #5D4037, #795548, #5D4037);
+            border-radius: 10px 10px 0 0;
+            z-index: 1;
+            box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .tree-trunk {
+            position: absolute;
+            bottom: 190px;
+            width: 60px;
+            height: 250px;
+            background: linear-gradient(to right, #4E342E, #6D4C41, #4E342E);
+            border-radius: 5px;
+            z-index: 1;
+        }
+
+        .footer {
+            margin: 40px auto 20px;
+            text-align: center;
+            color: #dfe6e9;
+            font-size: 0.9rem;
+            padding: 25px;
+            border-top: 1px solid rgba(116, 185, 255, 0.2);
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        .footer-heart {
+            color: #74b9ff;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: rotate(45deg) scale(1); }
+            5% { transform: rotate(45deg) scale(1.1); }
+            10% { transform: rotate(45deg) scale(1); }
+            15% { transform: rotate(45deg) scale(1.2); }
+            50% { transform: rotate(45deg) scale(1); }
+            100% { transform: rotate(45deg) scale(1); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        @keyframes floatUp {
+            0% { 
+                transform: translateY(0) scale(1); 
+                opacity: 0.7;
+            }
+            100% { 
+                transform: translateY(-800px) scale(0.5); 
+                opacity: 0;
+            }
+        }
+
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes growTree {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tree-container, .features-container {
+                min-width: 90%;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .tree-container {
+                min-width: 100%;
+                height: 500px;
+            }
+            
+            .features-container {
+                min-width: 100%;
+                height: auto;
+                padding: 20px;
+            }
+            
+            .title {
+                font-size: 2.2rem;
+            }
+            
+            .together-display {
+                font-size: 2rem;
+            }
+            
+            .digital-clock {
+                font-size: 2rem;
+                letter-spacing: 2px;
+            }
+            
+            .pomodoro-display {
+                font-size: 1.8rem;
+            }
+            
+            .time-unit {
+                gap: 8px;
+            }
+            
+            .unit {
+                min-width: 70px;
+                padding: 8px;
+            }
+            
+            .unit-value {
+                font-size: 1.3rem;
+            }
+            
+            .pomodoro-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .pomodoro-btn {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab-btn {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            
+            .time-inputs {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .time-input-group {
+                width: 100%;
+            }
+            
+            .time-input {
+                width: 100%;
+                max-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="intro-overlay" id="introOverlay">
+        <div class="heart-loader"></div>
+        <div class="intro-text">Nuestro Mundo Azul</div>
+        <div class="intro-date">Desde el 26 de Marzo de 2024</div>
+        <div class="intro-subtitle">Cada latido, cada instante, cada día a tu lado es un regalo. Este árbol crece con nuestro amor.</div>
+    </div>
+
+    <div class="modal-overlay" id="customTimeModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Configurar Tiempo Personalizado</h2>
+            <p style="text-align: center; color: #dfe6e9; margin-bottom: 20px;">Establece el tiempo en minutos y segundos</p>
+            <div class="time-inputs">
+                <div class="time-input-group">
+                    <label for="customMinutes">Minutos</label>
+                    <input type="number" id="customMinutes" class="time-input" min="0" max="120" value="10">
+                </div>
+                <div class="time-input-group">
+                    <label for="customSeconds">Segundos</label>
+                    <input type="number" id="customSeconds" class="time-input" min="0" max="59" value="0">
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm" id="confirmCustomTime"><i class="fas fa-check"></i> Confirmar</button>
+                <button class="modal-btn cancel" id="cancelCustomTime"><i class="fas fa-times"></i> Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="header">
+            <h1 class="title"><i class="fas fa-heart"></i> Nuestro Tiempo Juntos <i class="fas fa-heart"></i></h1>
+            <p class="subtitle">Cada día a tu lado es una página en nuestra historia de amor</p>
+            <div class="anniversary-date">26 de Marzo de 2024 <i class="fas fa-calendar-heart"></i></div>
+        </div>
+
+        <div class="container">
+            <div class="tree-container" id="treeContainer">
+                <div class="tree-base"></div>
+                <div class="tree-trunk"></div>
+            </div>
+
+            <div class="features-container">
+                <h2 class="features-title"><i class="fas fa-heart"></i> Nuestro Mundo</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="relojes"><i class="fas fa-clock"></i> Relojes</button>
+                    <button class="tab-btn" data-tab="calendario"><i class="fas fa-calendar"></i> Calendario</button>
+                    <button class="tab-btn" data-tab="mensajes"><i class="fas fa-heart"></i> Mensajes</button>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="relojes">
+                        <div class="together-time">
+                            <div class="together-title">Tiempo Juntos</div>
+                            <div class="together-display" id="togetherDisplay">000:00:00</div>
+                            <div class="time-unit">
+                                <div class="unit"><div class="unit-value" id="daysValue">0</div><div class="unit-label">Días</div></div>
+                                <div class="unit"><div class="unit-value" id="hoursValue">0</div><div class="unit-label">Horas</div></div>
+                                <div class="unit"><div class="unit-value" id="minutesValue">0</div><div class="unit-label">Minutos</div></div>
+                            </div>
+                        </div>
+                        <div class="normal-clock">
+                            <div class="normal-clock-title">Hora Actual</div>
+                            <div class="digital-clock" id="digitalClock">00:00:00</div>
+                            <div class="date-display" id="dateDisplay">Cargando fecha...</div>
+                        </div>
+                        <div class="pomodoro-container">
+                            <div class="pomodoro-title">Pomodoro Timer</div>
+                            <div class="pomodoro-display" id="pomodoroDisplay">25:00</div>
+                            <div class="pomodoro-controls">
+                                <button class="pomodoro-btn start" id="pomodoroStartBtn"><i class="fas fa-play"></i> Iniciar</button>
+                                <button class="pomodoro-btn pause" id="pomodoroPauseBtn" disabled><i class="fas fa-pause"></i> Pausar</button>
+                                <button class="pomodoro-btn reset" id="pomodoroResetBtn" disabled><i class="fas fa-redo"></i> Reiniciar</button>
+                            </div>
+                            <div class="pomodoro-presets">
+                                <button class="preset-btn" data-minutes="25">Pomodoro (25 min)</button>
+                                <button class="preset-btn" data-minutes="5">Descanso Corto (5 min)</button>
+                                <button class="preset-btn" data-minutes="15">Descanso Largo (15 min)</button>
+                                <button class="preset-btn" id="customTimeBtn"><i class="fas fa-cog"></i> Personalizado</button>
+                            </div>
+                            <div class="pomodoro-status" id="pomodoroStatus">Configura un tiempo y haz clic en Iniciar</div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane" id="calendario">
+                        <div class="calendar-container">
+                            <div class="calendar-header">
+                                <button class="calendar-nav-btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                                <div class="calendar-month" id="currentMonth">Cargando...</div>
+                                <button class="calendar-nav-btn" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <div class="calendar-weekdays">
+                                <div class="weekday">Lun</div><div class="weekday">Mar</div><div class="weekday">Mié</div>
+                                <div class="weekday">Jue</div><div class="weekday">Vie</div><div class="weekday">Sáb</div><div class="weekday">Dom</div>
+                            </div>
+                            <div class="calendar-days" id="calendarDays"></div>
+                            <div class="calendar-legend">
+                                <div class="legend-item"><div class="legend-color today"></div><span>Hoy</span></div>
+                                <div class="legend-item"><div class="legend-color anniversary"></div><span>Aniversario</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane" id="mensajes">
+                        <div class="messages-container">
+                            <h3 class="messages-title">Nuestros Mensajes</h3>
+                            <div class="messages-list" id="messagesList"></div>
+                            <button class="add-message-btn" id="addMessageBtn"><i class="fas fa-plus-circle"></i> Añadir Mensaje</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Hecho con <i class="fas fa-heart footer-heart"></i> para celebrar cada momento desde el 26 de marzo de 2024</p>
+            <p>Este árbol crece con nuestro amor, cada corazón azul representa un momento especial juntos</p>
+        </div>
+    </div>
+
+    <script>
+        // ================= CONFIGURACIÓN FIREBASE =================
+        const firebaseConfig = {
+            apiKey: "AIzaSyC24g3UjOZlS4EijJQZptPdjlh_KUpMyII",
+            authDomain: "nuestro-tiempo-juntos.firebaseapp.com",
+            projectId: "nuestro-tiempo-juntos",
+            storageBucket: "nuestro-tiempo-juntos.firebasestorage.app",
+            messagingSenderId: "917175212208",
+            appId: "1:917175212208:web:6cbc852fafa3f1cfddc375"
+        };
+        
+        // Inicializar Firebase
+        let db = null;
+        let isFirebaseInitialized = false;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            isFirebaseInitialized = true;
+            console.log("Firebase inicializado correctamente");
+        } catch (error) {
+            console.log("Error al inicializar Firebase:", error);
+        }
+        
+        // ================= VARIABLES GLOBALES =================
+        const START_DATE = new Date('2024-03-26T00:00:00');
+        let heartCount = 0;
+        let currentSeason = 'spring';
+        
+        let pomodoroTime = 25 * 60;
+        let pomodoroInterval = null;
+        let pomodoroRunning = false;
+        let pomodoroPaused = false;
+        
+        let currentCalendarDate = new Date();
+        let currentUser = null;
+        
+        const seasonColors = {
+            spring: ['#74b9ff', '#81ecec', '#a29bfe', '#6c5ce7', '#00cec9', '#55efc4', '#00b894'],
+            summer: ['#ff9ff3', '#f368e0', '#ff6b81', '#ff9f43', '#feca57', '#ff9ff3', '#ff6b81'],
+            autumn: ['#e17055', '#fdcb6e', '#e84393', '#fd79a8', '#fab1a0', '#ff7675', '#d63031'],
+            winter: ['#dfe6e9', '#b2bec3', '#636e72', '#74b9ff', '#0984e3', '#a29bfe', '#6c5ce7']
+        };
+        
+        const loveMessages = [
+            "Nuestra primera cita en el piramide",
+            "Nuestro viaje a Tenerife por nuestro primer aniversario",
+            "La primera vez que te dije 'te quiero'",
+            "Nuestra canción, la salvación",
+            "Nuestro primer beso",
+            "Cuando superamos juntos ese desafío",
+            "Los planes que hacemos para el futuro",
+            "Nosotros en la playa",
+            "Esa lluvia que nos pilló desprevenidos",
+            "Esa noche bajo las estrellas en Granada",
+            "Los pases por Sevilla",
+            "Las miles de comidas que hacemos o cocinamos",
+            "Lo helados del macdonals jajaja",
+            "Las rutitas de montaña con compañía o solos",
+            "Las miles de fotos chorras",
+            "Esos dias en lo de los aviones",
+            "Nuestro corazón próximamente en París",
+            "Las navidades juntos",
+            "La feria a tu lado",
+            "Negri",
+            "Cuando vamos al cine juntos",
+            "Petarda jajajaja",
+            "Cuando me robas una camiseta que te queda divina",
+            "Te amo petardilla"
+        ];
+        
+        const topHeartMessages = [
+            "Eres la persona más especial de mi vida",
+            "Mi amor por ti crece cada día más",
+            "Eres mi sueño hecho realidad",
+            "Contigo he encontrado la felicidad verdadera"
+        ];
+        
+        // Elementos del DOM
+        const introOverlay = document.getElementById('introOverlay');
+        const mainContent = document.getElementById('mainContent');
+        const treeContainer = document.getElementById('treeContainer');
+        const digitalClock = document.getElementById('digitalClock');
+        const dateDisplay = document.getElementById('dateDisplay');
+        const togetherDisplay = document.getElementById('togetherDisplay');
+        const daysValue = document.getElementById('daysValue');
+        const hoursValue = document.getElementById('hoursValue');
+        const minutesValue = document.getElementById('minutesValue');
+        
+        const pomodoroDisplay = document.getElementById('pomodoroDisplay');
+        const pomodoroStartBtn = document.getElementById('pomodoroStartBtn');
+        const pomodoroPauseBtn = document.getElementById('pomodoroPauseBtn');
+        const pomodoroResetBtn = document.getElementById('pomodoroResetBtn');
+        const pomodoroStatus = document.getElementById('pomodoroStatus');
+        const customTimeBtn = document.getElementById('customTimeBtn');
+        
+        const customTimeModal = document.getElementById('customTimeModal');
+        const customMinutesInput = document.getElementById('customMinutes');
+        const customSecondsInput = document.getElementById('customSeconds');
+        const confirmCustomTimeBtn = document.getElementById('confirmCustomTime');
+        const cancelCustomTimeBtn = document.getElementById('cancelCustomTime');
+        
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        
+        const currentMonthElement = document.getElementById('currentMonth');
+        const calendarDaysElement = document.getElementById('calendarDays');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        
+        const messagesListElement = document.getElementById('messagesList');
+        const addMessageBtn = document.getElementById('addMessageBtn');
+        
+        // ================= FUNCIONES =================
+        function getCurrentSeason() {
+            const month = new Date().getMonth() + 1;
+            if (month >= 3 && month <= 5) return 'spring';
+            if (month >= 6 && month <= 8) return 'summer';
+            if (month >= 9 && month <= 11) return 'autumn';
+            return 'winter';
+        }
+        
+        function getSeasonColors() {
+            return seasonColors[currentSeason];
+        }
+        
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+        
+        function calculateTimeTogether() {
+            const now = new Date();
+            const diff = now - START_DATE;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            return { days, hours, minutes };
+        }
+        
+        function formatDate(date) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleDateString('es-ES', options);
+        }
+        
+        function updateDigitalClock() {
+            const now = new Date();
+            digitalClock.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            dateDisplay.textContent = now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        
+        function updateTogetherTime() {
+            const time = calculateTimeTogether();
+            togetherDisplay.textContent = `${String(time.days).padStart(3, '0')}:${String(time.hours).padStart(2, '0')}:${String(time.minutes).padStart(2, '0')}`;
+            daysValue.textContent = time.days;
+            hoursValue.textContent = time.hours;
+            minutesValue.textContent = time.minutes;
+        }
+        
+        // Pomodoro
+        function updatePomodoroDisplay() {
+            pomodoroDisplay.textContent = formatTime(pomodoroTime);
+            if (pomodoroTime <= 10) pomodoroDisplay.classList.add('alarm');
+            else pomodoroDisplay.classList.remove('alarm');
+        }
+        
+        function startPomodoro() {
+            if (!pomodoroRunning && pomodoroTime > 0) {
+                pomodoroRunning = true;
+                pomodoroPaused = false;
+                pomodoroStartBtn.disabled = true;
+                pomodoroPauseBtn.disabled = false;
+                pomodoroResetBtn.disabled = false;
+                pomodoroStatus.textContent = "Tiempo en progreso...";
+                pomodoroInterval = setInterval(() => {
+                    if (pomodoroTime > 0) {
+                        pomodoroTime--;
+                        updatePomodoroDisplay();
+                        if (pomodoroTime === 0) {
+                            pomodoroAlarm();
+                            stopPomodoro();
+                        }
+                    }
+                }, 1000);
+            }
+        }
+        
+        function pausePomodoro() {
+            if (pomodoroRunning && !pomodoroPaused) {
+                clearInterval(pomodoroInterval);
+                pomodoroPaused = true;
+                pomodoroPauseBtn.innerHTML = '<i class="fas fa-play"></i> Continuar';
+                pomodoroStatus.textContent = "Tiempo en pausa";
+            } else if (pomodoroPaused) {
+                startPomodoro();
+                pomodoroPauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pausar';
+            }
+        }
+        
+        function resetPomodoro() {
+            stopPomodoro();
+            pomodoroTime = 25 * 60;
+            updatePomodoroDisplay();
+            pomodoroStatus.textContent = "Pomodoro reiniciado";
+        }
+        
+        function stopPomodoro() {
+            clearInterval(pomodoroInterval);
+            pomodoroRunning = false;
+            pomodoroPaused = false;
+            pomodoroStartBtn.disabled = false;
+            pomodoroPauseBtn.disabled = true;
+            pomodoroResetBtn.disabled = true;
+            pomodoroPauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pausar';
+            pomodoroDisplay.classList.remove('alarm');
+        }
+        
+        function pomodoroAlarm() {
+            pomodoroDisplay.classList.add('alarm');
+            pomodoroStatus.textContent = "¡Tiempo completado!";
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch(e) { console.log("No se pudo reproducir alarma"); }
+        }
+        
+        function showCustomTimeModal() {
+            if (pomodoroRunning) stopPomodoro();
+            customMinutesInput.value = "10";
+            customSecondsInput.value = "0";
+            customTimeModal.classList.add('active');
+        }
+        
+        function hideCustomTimeModal() { customTimeModal.classList.remove('active'); }
+        
+        function setCustomTime() {
+            const minutes = parseInt(customMinutesInput.value) || 0;
+            const seconds = parseInt(customSecondsInput.value) || 0;
+            const totalTime = (minutes * 60) + seconds;
+            if (totalTime > 0) {
+                pomodoroTime = totalTime;
+                updatePomodoroDisplay();
+                pomodoroStatus.textContent = `Tiempo configurado: ${minutes}:${String(seconds).padStart(2,'0')}`;
+                hideCustomTimeModal();
+            } else { alert("Establece un tiempo mayor a 0"); }
+        }
+        
+        // Calendario
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            currentMonthElement.textContent = `${monthNames[month]} ${year}`;
+            const firstDay = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+            calendarDaysElement.innerHTML = '';
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'calendar-day empty';
+                calendarDaysElement.appendChild(empty);
+            }
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                dayEl.textContent = day;
+                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) dayEl.classList.add('today');
+                if (day === 26 && month === 2) dayEl.classList.add('anniversary');
+                calendarDaysElement.appendChild(dayEl);
+            }
+        }
+        
+        // ================= MENSAJES CON FIREBASE =================
+        async function loadMessages() {
+            if (!isFirebaseInitialized) return;
+            try {
+                db.collection('messages').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+                    messagesListElement.innerHTML = '';
+                    const messages = [];
+                    snapshot.forEach(doc => messages.push(doc.data()));
+                    messages.reverse().forEach(msg => {
+                        const div = document.createElement('div');
+                        div.className = 'message-item';
+                        div.innerHTML = `
+                            <div class="message-sender">${msg.sender || 'Alguien'}</div>
+                            <div>${msg.text}</div>
+                            <div class="message-date">${msg.date || new Date().toLocaleString()}</div>
+                        `;
+                        messagesListElement.appendChild(div);
+                    });
+                    if (messages.length === 0) {
+                        messagesListElement.innerHTML = '<div class="message-item">💙 Escribe tu primer mensaje especial 💙<div class="message-date">Ahora</div></div>';
+                    }
+                });
+            } catch(e) { console.error("Error cargando mensajes:", e); }
+        }
+        
+        async function sendMessage(text) {
+            if (!isFirebaseInitialized || !text.trim()) return;
+            try {
+                await db.collection('messages').add({
+                    text: text.trim(),
+                    sender: currentUser,
+                    date: new Date().toLocaleString('es-ES'),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                return true;
+            } catch(e) { console.error("Error enviando mensaje:", e); return false; }
+        }
+        
+        function addNewMessage() {
+            const text = prompt('Escribe tu mensaje especial:');
+            if (text && text.trim()) {
+                sendMessage(text.trim());
+            }
+        }
+        
+        // ================= ÁRBOL =================
+        function showMessageInTree(heartElement, message) {
+            const msgDiv = document.createElement('div');
+            const rect = heartElement.getBoundingClientRect();
+            const treeRect = treeContainer.getBoundingClientRect();
+            const left = rect.left - treeRect.left + rect.width/2;
+            const top = rect.top - treeRect.top - 60;
+            msgDiv.textContent = message;
+            msgDiv.style.cssText = `position:absolute; left:${left}px; top:${top}px; background:rgba(116,185,255,0.95); color:white; padding:12px 20px; border-radius:20px; font-size:16px; max-width:250px; text-align:center; transform:translateX(-50%); z-index:100; pointer-events:none; animation:messageAppear 0.4s ease; box-shadow:0 5px 15px rgba(0,0,0,0.3); border:2px solid rgba(255,255,255,0.3); font-weight:500;`;
+            treeContainer.appendChild(msgDiv);
+            setTimeout(() => { msgDiv.style.opacity = '0'; msgDiv.style.transform = 'translateX(-50%) translateY(-30px)'; setTimeout(() => msgDiv.remove(), 400); }, 4000);
+            heartElement.style.transform = 'scale(1.3)';
+            setTimeout(() => heartElement.style.transform = 'scale(1)', 300);
+        }
+        
+        function initializeTreeBasedOnTime() {
+            currentSeason = getCurrentSeason();
+            const timeTogether = calculateTimeTogether();
+            const baseHearts = Math.min(80 + timeTogether.days * 3, 300);
+            createTreeStructure(baseHearts);
+            for (let i = 0; i < 20; i++) createFloatingHeart();
+            createStars();
+        }
+        
+        function createTreeStructure(totalHearts) {
+            const layers = 7;
+            const heartsPerLayer = Math.floor(totalHearts / layers);
+            const colors = getSeasonColors();
+            for (let layer = 0; layer < layers; layer++) {
+                const layerHearts = heartsPerLayer + (layer === 0 ? totalHearts % layers : 0);
+                const layerWidth = 400 - layer * 50;
+                const layerTop = 500 - layer * 60;
+                for (let i = 0; i < layerHearts; i++) createTreeHeart(layer, i, layerHearts, layerWidth, layerTop, colors);
+            }
+            createTopHeart(colors);
+        }
+        
+        function createTreeHeart(layer, position, total, width, topY, colors) {
+            const heart = document.createElement('div');
+            heart.innerHTML = '<i class="fas fa-heart"></i>';
+            const size = 25 - layer * 2 + Math.random() * 5;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const spacing = width / total;
+            const left = (treeContainer.offsetWidth / 2) - (width / 2) + (position * spacing) - size/2;
+            const top = topY + Math.random() * 30 - 15;
+            heart.style.cssText = `position:absolute; left:${left}px; top:${top}px; width:${size}px; height:${size}px; color:${color}; font-size:${size}px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:${10-layer}; filter:drop-shadow(0 0 8px ${color}80); animation:float ${4+Math.random()*5}s infinite ease-in-out ${Math.random()*2}s;`;
+            heart.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const randomMsg = loveMessages[Math.floor(Math.random() * loveMessages.length)];
+                showMessageInTree(heart, randomMsg);
+            });
+            treeContainer.appendChild(heart);
+            heartCount++;
+        }
+        
+        function createTopHeart(colors) {
+            const heart = document.createElement('div');
+            heart.innerHTML = '<i class="fas fa-heart"></i>';
+            const size = 35;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            heart.style.cssText = `position:absolute; left:${treeContainer.offsetWidth/2 - size/2}px; top:100px; width:${size}px; height:${size}px; color:${color}; font-size:${size}px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:20; filter:drop-shadow(0 0 15px ${color}); animation:float 3s infinite ease-in-out;`;
+            heart.addEventListener('click', () => {
+                const randomMsg = topHeartMessages[Math.floor(Math.random() * topHeartMessages.length)];
+                showMessageInTree(heart, randomMsg);
+            });
+            treeContainer.appendChild(heart);
+        }
+        
+        function createFloatingHeart() {
+            const heart = document.createElement('div');
+            heart.innerHTML = '<i class="fas fa-heart"></i>';
+            const size = Math.random() * 20 + 10;
+            const colors = getSeasonColors();
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const left = Math.random() * treeContainer.offsetWidth;
+            heart.style.cssText = `position:absolute; left:${left}px; top:${treeContainer.offsetHeight + 20}px; width:${size}px; height:${size}px; color:${color}; font-size:${size}px; display:flex; align-items:center; justify-content:center; z-index:0; opacity:0.6; animation:floatUp ${15+Math.random()*20}s linear infinite;`;
+            treeContainer.appendChild(heart);
+            setTimeout(() => heart.remove(), 20000);
+            setTimeout(createFloatingHeart, Math.random() * 8000 + 4000);
+        }
+        
+        function createStars() {
+            for (let i = 0; i < 30; i++) {
+                const star = document.createElement('div');
+                star.innerHTML = '✦';
+                const size = Math.random() * 15 + 10;
+                star.style.cssText = `position:absolute; left:${Math.random() * treeContainer.offsetWidth}px; top:${Math.random() * (treeContainer.offsetHeight - 200) + 100}px; color:#74b9ff; font-size:${size}px; opacity:${Math.random() * 0.5 + 0.1}; z-index:0; animation:starTwinkle ${3+Math.random()*5}s infinite;`;
+                treeContainer.appendChild(star);
+            }
+        }
+        
+        // ================= INICIALIZACIÓN =================
+        document.addEventListener('DOMContentLoaded', function() {
+            currentUser = prompt("¡Bienvenido! ¿Cuál es tu nombre?") || "Amor";
+            loadMessages();
+            
+            setTimeout(() => {
+                introOverlay.classList.add('hidden');
+                setTimeout(() => {
+                    mainContent.classList.add('visible');
+                    initializeTreeBasedOnTime();
+                    updateDigitalClock();
+                    updateTogetherTime();
+                    setInterval(updateDigitalClock, 1000);
+                    setInterval(updateTogetherTime, 1000);
+                    updatePomodoroDisplay();
+                    renderCalendar();
+                    treeContainer.style.animation = 'growTree 2s ease';
+                }, 500);
+            }, 4000);
+            
+            pomodoroStartBtn.addEventListener('click', startPomodoro);
+            pomodoroPauseBtn.addEventListener('click', pausePomodoro);
+            pomodoroResetBtn.addEventListener('click', resetPomodoro);
+            document.querySelectorAll('.preset-btn[data-minutes]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const minutes = parseInt(this.getAttribute('data-minutes'));
+                    pomodoroTime = minutes * 60;
+                    updatePomodoroDisplay();
+                    pomodoroStatus.textContent = `Tiempo configurado a ${minutes} minutos`;
+                });
+            });
+            customTimeBtn.addEventListener('click', showCustomTimeModal);
+            confirmCustomTimeBtn.addEventListener('click', setCustomTime);
+            cancelCustomTimeBtn.addEventListener('click', hideCustomTimeModal);
+            customTimeModal.addEventListener('click', e => { if(e.target === customTimeModal) hideCustomTimeModal(); });
+            
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    tabButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    tabPanes.forEach(p => p.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            prevMonthBtn.addEventListener('click', () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); });
+            nextMonthBtn.addEventListener('click', () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); });
+            addMessageBtn.addEventListener('click', addNewMessage);
+            
+            setInterval(() => { if(Math.random() > 0.7 && heartCount < 500) createStars(); }, 15000);
+        });
+    </script>
+</body>
+</html>
