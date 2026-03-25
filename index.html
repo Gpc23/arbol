@@ -461,6 +461,7 @@
             min-height: 20px;
         }
 
+        /* CALENDARIO CON NOTAS */
         .calendar-container {
             height: 100%;
             display: flex;
@@ -515,7 +516,7 @@
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 5px;
-            flex: 1;
+            margin-bottom: 15px;
         }
 
         .calendar-day {
@@ -524,7 +525,7 @@
             align-items: center;
             justify-content: center;
             border-radius: 10px;
-            cursor: default;
+            cursor: pointer;
             transition: all 0.3s ease;
             font-size: 0.9rem;
             background: rgba(116, 185, 255, 0.05);
@@ -532,10 +533,21 @@
             position: relative;
         }
 
+        .calendar-day:hover {
+            background: rgba(116, 185, 255, 0.2);
+            transform: scale(1.05);
+        }
+
         .calendar-day.empty {
             background: transparent;
             border: none;
             cursor: default;
+        }
+
+        .calendar-day.selected {
+            background: rgba(116, 185, 255, 0.4);
+            border-color: #74b9ff;
+            box-shadow: 0 0 10px rgba(116, 185, 255, 0.5);
         }
 
         .calendar-day.today {
@@ -551,11 +563,15 @@
             font-weight: bold;
         }
 
+        .calendar-day.has-note {
+            border-bottom: 3px solid #74b9ff;
+        }
+
         .calendar-legend {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 15px;
+            margin-bottom: 15px;
             font-size: 0.8rem;
         }
 
@@ -563,6 +579,12 @@
             display: flex;
             align-items: center;
             gap: 5px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
         }
 
         .legend-color.today {
@@ -573,6 +595,114 @@
         .legend-color.anniversary {
             background: rgba(255, 118, 117, 0.2);
             border: 1px solid #ff7675;
+        }
+
+        .legend-color.selected {
+            background: rgba(116, 185, 255, 0.4);
+            border: 1px solid #74b9ff;
+        }
+
+        .legend-color.has-note {
+            background: transparent;
+            border-bottom: 3px solid #74b9ff;
+            width: 20px;
+        }
+
+        /* Sección de notas del día */
+        .day-note-section {
+            background: rgba(10, 15, 35, 0.5);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 10px;
+            border: 1px solid rgba(116, 185, 255, 0.2);
+        }
+
+        .selected-date-title {
+            font-size: 1.1rem;
+            color: #74b9ff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .note-input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .note-input {
+            flex: 1;
+            padding: 10px 12px;
+            background: rgba(10, 15, 35, 0.6);
+            border: 1px solid rgba(116, 185, 255, 0.3);
+            border-radius: 10px;
+            color: #dfe6e9;
+            font-size: 0.9rem;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .note-input:focus {
+            outline: none;
+            border-color: #74b9ff;
+        }
+
+        .save-note-btn {
+            padding: 10px 20px;
+            background: rgba(116, 185, 255, 0.3);
+            border: 1px solid rgba(116, 185, 255, 0.5);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .save-note-btn:hover {
+            background: rgba(116, 185, 255, 0.5);
+        }
+
+        .current-note {
+            background: rgba(116, 185, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .current-note-label {
+            font-size: 0.8rem;
+            color: #a29bfe;
+            margin-bottom: 5px;
+        }
+
+        .current-note-text {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            color: #dfe6e9;
+        }
+
+        .no-note-text {
+            color: #a29bfe;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .delete-note-btn {
+            background: rgba(255, 118, 117, 0.2);
+            border: 1px solid rgba(255, 118, 117, 0.4);
+            border-radius: 8px;
+            padding: 5px 12px;
+            color: #ff7675;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-note-btn:hover {
+            background: rgba(255, 118, 117, 0.4);
         }
 
         .messages-container {
@@ -809,14 +939,8 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeIn {
@@ -836,14 +960,8 @@
         }
 
         @keyframes floatUp {
-            0% { 
-                transform: translateY(0) scale(1); 
-                opacity: 0.7;
-            }
-            100% { 
-                transform: translateY(-800px) scale(0.5); 
-                opacity: 0;
-            }
+            0% { transform: translateY(0) scale(1); opacity: 0.7; }
+            100% { transform: translateY(-800px) scale(0.5); opacity: 0; }
         }
 
         @keyframes starTwinkle {
@@ -857,101 +975,32 @@
         }
 
         @keyframes messageAppear {
-            from {
-                opacity: 0;
-                transform: translateY(20px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(20px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         @media (max-width: 1100px) {
-            .container {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .tree-container, .features-container {
-                min-width: 90%;
-            }
+            .container { flex-direction: column; align-items: center; }
+            .tree-container, .features-container { min-width: 90%; }
         }
 
         @media (max-width: 650px) {
-            .tree-container {
-                min-width: 100%;
-                height: 500px;
-            }
-            
-            .features-container {
-                min-width: 100%;
-                height: auto;
-                padding: 20px;
-            }
-            
-            .title {
-                font-size: 2.2rem;
-            }
-            
-            .together-display {
-                font-size: 2rem;
-            }
-            
-            .digital-clock {
-                font-size: 2rem;
-                letter-spacing: 2px;
-            }
-            
-            .pomodoro-display {
-                font-size: 1.8rem;
-            }
-            
-            .time-unit {
-                gap: 8px;
-            }
-            
-            .unit {
-                min-width: 70px;
-                padding: 8px;
-            }
-            
-            .unit-value {
-                font-size: 1.3rem;
-            }
-            
-            .pomodoro-controls {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .pomodoro-btn {
-                width: 100%;
-                max-width: 200px;
-            }
-            
-            .tabs {
-                flex-wrap: wrap;
-            }
-            
-            .tab-btn {
-                padding: 10px;
-                font-size: 0.9rem;
-            }
-            
-            .time-inputs {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .time-input-group {
-                width: 100%;
-            }
-            
-            .time-input {
-                width: 100%;
-                max-width: 150px;
-            }
+            .tree-container { min-width: 100%; height: 500px; }
+            .features-container { min-width: 100%; height: auto; padding: 20px; }
+            .title { font-size: 2.2rem; }
+            .together-display { font-size: 2rem; }
+            .digital-clock { font-size: 2rem; }
+            .pomodoro-display { font-size: 1.8rem; }
+            .time-unit { gap: 8px; }
+            .unit { min-width: 70px; padding: 8px; }
+            .unit-value { font-size: 1.3rem; }
+            .pomodoro-controls { flex-direction: column; align-items: center; }
+            .pomodoro-btn { width: 100%; max-width: 200px; }
+            .tabs { flex-wrap: wrap; }
+            .tab-btn { padding: 10px; font-size: 0.9rem; }
+            .time-inputs { flex-direction: column; gap: 15px; }
+            .time-input-group { width: 100%; }
+            .time-input { width: 100%; max-width: 150px; }
         }
     </style>
 </head>
@@ -1050,9 +1099,26 @@
                                 <div class="weekday">Jue</div><div class="weekday">Vie</div><div class="weekday">Sáb</div><div class="weekday">Dom</div>
                             </div>
                             <div class="calendar-days" id="calendarDays"></div>
+                            
                             <div class="calendar-legend">
                                 <div class="legend-item"><div class="legend-color today"></div><span>Hoy</span></div>
                                 <div class="legend-item"><div class="legend-color anniversary"></div><span>Aniversario</span></div>
+                                <div class="legend-item"><div class="legend-color selected"></div><span>Seleccionado</span></div>
+                                <div class="legend-item"><div class="legend-color has-note"></div><span>Tiene nota</span></div>
+                            </div>
+                            
+                            <!-- Sección de notas del día -->
+                            <div class="day-note-section" id="dayNoteSection">
+                                <div class="selected-date-title" id="selectedDateTitle">Selecciona un día</div>
+                                <div class="note-input-area">
+                                    <textarea class="note-input" id="noteInput" rows="2" placeholder="Escribe una nota para este día..."></textarea>
+                                    <button class="save-note-btn" id="saveNoteBtn"><i class="fas fa-save"></i> Guardar</button>
+                                </div>
+                                <div class="current-note" id="currentNote">
+                                    <div class="current-note-label">📝 Nota guardada:</div>
+                                    <div class="current-note-text" id="currentNoteText">Selecciona un día para ver o añadir notas</div>
+                                    <button class="delete-note-btn" id="deleteNoteBtn" style="display: none;"><i class="fas fa-trash"></i> Eliminar nota</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1085,7 +1151,6 @@
             appId: "1:917175212208:web:6cbc852fafa3f1cfddc375"
         };
         
-        // Inicializar Firebase
         let db = null;
         let isFirebaseInitialized = false;
         
@@ -1110,6 +1175,8 @@
         
         let currentCalendarDate = new Date();
         let currentUser = null;
+        let selectedDate = null;
+        let currentNote = null;
         
         const seasonColors = {
             spring: ['#74b9ff', '#81ecec', '#a29bfe', '#6c5ce7', '#00cec9', '#55efc4', '#00b894'],
@@ -1187,6 +1254,13 @@
         const messagesListElement = document.getElementById('messagesList');
         const addMessageBtn = document.getElementById('addMessageBtn');
         
+        // Elementos de notas
+        const selectedDateTitle = document.getElementById('selectedDateTitle');
+        const noteInput = document.getElementById('noteInput');
+        const saveNoteBtn = document.getElementById('saveNoteBtn');
+        const currentNoteText = document.getElementById('currentNoteText');
+        const deleteNoteBtn = document.getElementById('deleteNoteBtn');
+        
         // ================= FUNCIONES =================
         function getCurrentSeason() {
             const month = new Date().getMonth() + 1;
@@ -1218,6 +1292,10 @@
         function formatDate(date) {
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
             return date.toLocaleDateString('es-ES', options);
+        }
+        
+        function formatDateKey(date) {
+            return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
         }
         
         function updateDigitalClock() {
@@ -1331,7 +1409,102 @@
             } else { alert("Establece un tiempo mayor a 0"); }
         }
         
-        // Calendario
+        // ================= NOTAS DEL CALENDARIO =================
+        let allNotes = {};
+        
+        async function loadNotes() {
+            if (!isFirebaseInitialized) return;
+            try {
+                db.collection('calendarNotes').onSnapshot((snapshot) => {
+                    allNotes = {};
+                    snapshot.forEach(doc => {
+                        allNotes[doc.id] = doc.data();
+                    });
+                    renderCalendar();
+                    if (selectedDate) {
+                        displayNoteForDate(selectedDate);
+                    }
+                });
+            } catch(e) { console.error("Error cargando notas:", e); }
+        }
+        
+        async function saveNote(date, noteText) {
+            if (!isFirebaseInitialized || !date) return;
+            const dateKey = formatDateKey(date);
+            try {
+                if (noteText && noteText.trim()) {
+                    await db.collection('calendarNotes').doc(dateKey).set({
+                        text: noteText.trim(),
+                        updatedBy: currentUser,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        date: dateKey
+                    });
+                } else {
+                    // Si el texto está vacío, eliminar la nota
+                    await db.collection('calendarNotes').doc(dateKey).delete();
+                }
+                return true;
+            } catch(e) { console.error("Error guardando nota:", e); return false; }
+        }
+        
+        async function deleteNote(date) {
+            if (!isFirebaseInitialized || !date) return;
+            const dateKey = formatDateKey(date);
+            try {
+                await db.collection('calendarNotes').doc(dateKey).delete();
+                return true;
+            } catch(e) { console.error("Error eliminando nota:", e); return false; }
+        }
+        
+        function getNoteForDate(date) {
+            if (!date) return null;
+            const dateKey = formatDateKey(date);
+            return allNotes[dateKey] || null;
+        }
+        
+        function displayNoteForDate(date) {
+            if (!date) {
+                selectedDateTitle.textContent = "Selecciona un día";
+                currentNoteText.textContent = "Selecciona un día para ver o añadir notas";
+                noteInput.value = "";
+                deleteNoteBtn.style.display = "none";
+                return;
+            }
+            
+            const formattedDate = date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            selectedDateTitle.textContent = `📅 ${formattedDate}`;
+            
+            const note = getNoteForDate(date);
+            if (note && note.text) {
+                currentNoteText.textContent = note.text;
+                noteInput.value = note.text;
+                deleteNoteBtn.style.display = "block";
+            } else {
+                currentNoteText.textContent = "No hay nota para este día. Escribe una arriba y guarda.";
+                noteInput.value = "";
+                deleteNoteBtn.style.display = "none";
+            }
+        }
+        
+        async function handleSaveNote() {
+            if (!selectedDate) {
+                alert("Primero selecciona un día en el calendario");
+                return;
+            }
+            const noteText = noteInput.value.trim();
+            await saveNote(selectedDate, noteText);
+            displayNoteForDate(selectedDate);
+        }
+        
+        async function handleDeleteNote() {
+            if (!selectedDate) return;
+            if (confirm("¿Eliminar la nota de este día?")) {
+                await deleteNote(selectedDate);
+                displayNoteForDate(selectedDate);
+            }
+        }
+        
+        // ================= CALENDARIO =================
         function renderCalendar() {
             const year = currentCalendarDate.getFullYear();
             const month = currentCalendarDate.getMonth();
@@ -1351,10 +1524,37 @@
                 const dayEl = document.createElement('div');
                 dayEl.className = 'calendar-day';
                 dayEl.textContent = day;
-                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) dayEl.classList.add('today');
-                if (day === 26 && month === 2) dayEl.classList.add('anniversary');
+                
+                const currentDate = new Date(year, month, day);
+                const dateKey = formatDateKey(currentDate);
+                
+                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    dayEl.classList.add('today');
+                }
+                if (day === 26 && month === 2) {
+                    dayEl.classList.add('anniversary');
+                }
+                if (allNotes[dateKey] && allNotes[dateKey].text) {
+                    dayEl.classList.add('has-note');
+                }
+                if (selectedDate && formatDateKey(selectedDate) === dateKey) {
+                    dayEl.classList.add('selected');
+                }
+                
+                dayEl.addEventListener('click', (function(date) {
+                    return function() {
+                        selectDate(date);
+                    };
+                })(new Date(year, month, day)));
+                
                 calendarDaysElement.appendChild(dayEl);
             }
+        }
+        
+        function selectDate(date) {
+            selectedDate = date;
+            renderCalendar();
+            displayNoteForDate(date);
         }
         
         // ================= MENSAJES CON FIREBASE =================
@@ -1497,6 +1697,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             currentUser = prompt("¡Bienvenido! ¿Cuál es tu nombre?") || "Amor";
             loadMessages();
+            loadNotes();
             
             setTimeout(() => {
                 introOverlay.classList.add('hidden');
@@ -1542,6 +1743,10 @@
             prevMonthBtn.addEventListener('click', () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); });
             nextMonthBtn.addEventListener('click', () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); });
             addMessageBtn.addEventListener('click', addNewMessage);
+            
+            // Eventos de notas
+            saveNoteBtn.addEventListener('click', handleSaveNote);
+            deleteNoteBtn.addEventListener('click', handleDeleteNote);
             
             setInterval(() => { if(Math.random() > 0.7 && heartCount < 500) createStars(); }, 15000);
         });
